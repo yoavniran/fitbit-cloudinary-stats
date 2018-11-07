@@ -1,0 +1,29 @@
+{
+  "fitbit": {
+    "appUUID": "e4160821-17f9-40c5-80d3-7bbbd8f69dff",
+    "appType": "app",
+    "appDisplayName": "Cloudinary Stats",
+    "iconFile": "resources/icon.png",
+    "wipeColor": "#607d8b",
+    "requestedPermissions": [
+      "access_internet",
+      "run_background"
+    ],
+    "buildTargets": [
+      "higgs",
+      "meson"
+    ],
+    "i18n": {
+      "en": {
+        "name": "Cloudinary Stats"
+      }
+    }
+  },
+  "devDependencies": {
+    "@fitbit/sdk": "~2.0.0",
+    "@fitbit/sdk-cli": "^1.0.2"
+  },
+  "scripts": {
+    "build": "fitbit-build"
+  }
+}
