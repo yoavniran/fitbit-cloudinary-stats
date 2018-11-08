@@ -25,24 +25,24 @@ function mySettings(props) {
 				<Link source="https://cloudinary.com/console/dashboard">Cloudinary's Dashboard</Link>
 			</Section>
 
-			<Section
-				title={<Text bold>App Settings</Text>}>
-				<Toggle
-					settingsKey="toggle"
-					label="Toggle Switch"
-				/>
-				<ColorSelect
-					settingsKey="color"
-					colors={[
-						{color: "tomato"},
-						{color: "sandybrown"},
-						{color: "#FFD700"},
-						{color: "#ADFF2F"},
-						{color: "deepskyblue"},
-						{color: "plum"}
-					]}
-				/>
-			</Section>
+			{/*<Section*/}
+				{/*title={<Text bold>App Settings</Text>}>*/}
+				{/*<Toggle*/}
+					{/*settingsKey="toggle"*/}
+					{/*label="Toggle Switch"*/}
+				{/*/>*/}
+				{/*<ColorSelect*/}
+					{/*settingsKey="color"*/}
+					{/*colors={[*/}
+						{/*{color: "tomato"},*/}
+						{/*{color: "sandybrown"},*/}
+						{/*{color: "#FFD700"},*/}
+						{/*{color: "#ADFF2F"},*/}
+						{/*{color: "deepskyblue"},*/}
+						{/*{color: "plum"}*/}
+					{/*]}*/}
+				{/*/>*/}
+			{/*</Section>*/}
 		</Page>
 	);
 }

@@ -9,8 +9,10 @@ const ui = getUi();
 const msgHandlers = {
 	[MSG_TYPES.REPORT]: (data) => {
 		console.log("about to show report ui !!!!");
-		ui.hideSpinner();
-		ui.showMainContainer();
+		ui.spinner.disable();
+		ui.mainContainer.show();
+		ui.report.setData(data);
+		ui.report.show();
 	},
 };
 
@@ -37,7 +39,7 @@ messaging.peerSocket.onclose = () => {
 	console.log("App Socket Closed");
 };
 
-ui.showSpinner();
+ui.spinner.enable();
 
 // if monthly_price == 0
 // 	return 'strategic' if !trial? && !free?

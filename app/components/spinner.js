@@ -1,26 +1,22 @@
-import document from "document";
+import initComponent from "./base";
 
 let spinner = null,
 	api = null;
 
-const showSpinner = () => {
-	spinner.style.display = "inline";
-	spinner.state = "enabled";
-};
-
-const hideSpinner = () => {
-	spinner.style.display = "none";
-	spinner.state = "disabled";
-};
-
 export default () => {
 	if (!spinner) {
-		spinner = document.getElementById("spinner");
+		api = initComponent("spinner", {
+			enable: () => {
+				api.show();
+				spinner.state = "enabled";
+			},
+			disable: () => {
+				spinner.state = "disabled";
+				api.hide();
+			}
+		});
 
-		api = {
-			showSpinner,
-			hideSpinner,
-		};
+		spinner = api._elm;
 	}
 
 	return api;
