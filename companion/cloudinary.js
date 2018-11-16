@@ -1,19 +1,25 @@
 import {getFileSize} from "../common/utils";
 
 const DOMAIN = "https://api.cloudinary.com/",
-	REPORT = "usage";
+	REPORT = "usage",
+	SEARCH = "resources/search",
+	LATEST_MAX = 5,
+	IMG_PATH = "image/",
+	IMG_TRANSFORM = "w_696,h_500,c_pad,b_auto";
 
-const makeApiRequest = (resource, options) => {
+const makeApiRequest = (resource, options, data = null) => {
 	const url = [DOMAIN, "v1_1", options.cloud, resource].join("/"),
 		auth = btoa(`${options.apikey}:${options.secret}`);
 
 	console.log("about to make request to: ", url);
 
 	return fetch(url, {
+		method: options.method || "GET",
 		headers: new Headers({
 			"Content-Type": "application/json",
 			Authorization: `Basic ${auth}`
 		}),
+		body: data ? JSON.stringify(data) : undefined,
 	})
 		.then((response) => response.json());
 };
@@ -42,6 +48,36 @@ const fetchReport = (options) =>
 			};
 		});
 
+
+const getImageUrl = (url) => {
+	const index = url.indexOf(IMG_PATH) + IMG_PATH.length;
+
+	if (~index) {
+		const next = index + url.substr(index).indexOf("/");
+
+		url = url.substr(0, (next + 1)) +
+			IMG_TRANSFORM +
+			url.substr(next);
+	}
+
+	return url;
+};
+
+const fetchLatestForTag = (tag, options) =>
+	makeApiRequest(SEARCH, {
+		...options,
+		method: "POST"
+	}, {
+		expression: `resource_type:image AND tags = ${tag}`,
+		max_results: LATEST_MAX,
+		sort_by: [{"uploaded_at": "desc"}],
+	})
+		.then((result) => result.resources.map((r) => ({
+			url: getImageUrl(r.secure_url),
+			id: r.public_id
+		})));
+
 export {
 	fetchReport,
+	fetchLatestForTag,
 }

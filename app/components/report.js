@@ -9,7 +9,8 @@ let report = null,
 	storageSectSubTitle = null,
 	transSect = null,
 	transSectTitle = null,
-	transSectSubtTitle = null,
+	transSectSubTitle = null,
+	planText = null,
 	api = null;
 
 export default () => {
@@ -24,12 +25,24 @@ export default () => {
 				storageSectSubTitle.text = data.storagePercent;
 
 				transSectTitle.text = data.transformations;
-				transSectSubtTitle.text = data.transformationsPercent;
+				transSectSubTitle.text = data.transformationsPercent;
 
+				// planText.text = data.plan;
 				// derived: 1525,
 				// 	plan: 'Free',
 				// 	requests: 2271,
 				// 	resources: 618,
+
+
+
+				/* PLANS:
+
+				free: "Free"
+				basic: "Basic"
+				plus: "Plus"
+				advanced: "Advanced"
+				advanced_extra: "Advanced Extra"
+				premium: "Premium"*/
 			},
 		});
 
@@ -45,7 +58,9 @@ export default () => {
 
 		transSect = report.getElementById("report-trans");
 		transSectTitle = transSect.getElementById("item-title");
-		transSectSubtTitle = transSect.getElementById("item-subtitle");
+		transSectSubTitle = transSect.getElementById("item-subtitle");
+
+		// planText = report.getElementById("data-plan");
 	}
 
 	return api;

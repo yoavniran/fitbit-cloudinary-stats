@@ -1,5 +1,4 @@
-function mySettings(props) {
-	return (
+registerSettingsPage((props) => (
 		<Page>
 			<Section title={<Text bold>Cloudinary Settings</Text>}>
 
@@ -22,29 +21,37 @@ function mySettings(props) {
 				/>
 
 				<Text>Use the link below to check your Cloud's settings: </Text>
-				<Link source="https://cloudinary.com/console/dashboard">Cloudinary's Dashboard</Link>
+				<Link source="https://cloudinary.com/console/dashboard">Cloudinary's
+					Dashboard</Link>
+
+				<Toggle settingsKey="toggleTag" label="Fetch latest for tag"/>
+
+				{props.settings.toggleTag && props.settings.toggleTag !== "false" ?
+					<TextInput
+						label="Tag"
+						title="Tag"
+						settingsKey="tag"/> : null}
 			</Section>
 
+
 			{/*<Section*/}
-				{/*title={<Text bold>App Settings</Text>}>*/}
-				{/*<Toggle*/}
-					{/*settingsKey="toggle"*/}
-					{/*label="Toggle Switch"*/}
-				{/*/>*/}
-				{/*<ColorSelect*/}
-					{/*settingsKey="color"*/}
-					{/*colors={[*/}
-						{/*{color: "tomato"},*/}
-						{/*{color: "sandybrown"},*/}
-						{/*{color: "#FFD700"},*/}
-						{/*{color: "#ADFF2F"},*/}
-						{/*{color: "deepskyblue"},*/}
-						{/*{color: "plum"}*/}
-					{/*]}*/}
-				{/*/>*/}
+			{/*title={<Text bold>App Settings</Text>}>*/}
+			{/*<Toggle*/}
+			{/*settingsKey="toggle"*/}
+			{/*label="Toggle Switch"*/}
+			{/*/>*/}
+			{/*<ColorSelect*/}
+			{/*settingsKey="color"*/}
+			{/*colors={[*/}
+			{/*{color: "tomato"},*/}
+			{/*{color: "sandybrown"},*/}
+			{/*{color: "#FFD700"},*/}
+			{/*{color: "#ADFF2F"},*/}
+			{/*{color: "deepskyblue"},*/}
+			{/*{color: "plum"}*/}
+			{/*]}*/}
+			{/*/>*/}
 			{/*</Section>*/}
 		</Page>
-	);
-}
-
-registerSettingsPage(mySettings);
+	)
+);

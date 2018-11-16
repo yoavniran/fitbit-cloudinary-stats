@@ -1,56 +1,89 @@
 import * as messaging from "messaging";
+import {vibration} from "haptics";
+import {inbox} from "file-transfer";
+import * as jpeg from "jpeg";
+import * as fs from "fs";
 import getUi from "./ui";
 import {MSG_TYPES} from "../common/consts";
 
-//todo: write latest report to file system and retrieve on start
+let gotTagImages = false;
 
 const ui = getUi();
 
+const initialize = () => {
+	gotTagImages = false;
+	ui.spinner.enable();
+	ui.imagesStatus.showError();
+	ui.mainContainer.hide();
+};
+
 const msgHandlers = {
 	[MSG_TYPES.REPORT]: (data) => {
-		console.log("about to show report ui !!!!");
+
 		ui.spinner.disable();
 		ui.mainContainer.show();
-		ui.report.setData(data);
-		ui.report.show();
+		ui.mainContainer.scrollToTop();
+
+		if (data.error) {
+			console.log("loading failed !!!!!!!!");
+
+			vibration.start("nudge");
+			ui.status.showError();
+		}
+		else {
+			console.log("about to show report ui !!!!");
+
+			vibration.start("bump");
+			ui.status.showSuccess();
+			ui.report.setData(data);
+			ui.report.show();
+		}
 	},
+
+	[MSG_TYPES.INITIALIZE]: () => {
+		initialize();
+	}
 };
 
 messaging.peerSocket.onmessage = (e) => {
-	console.log(`App received msg of type: ${e.data.type}`); // JSON.stringify(e.data.data));
+	console.log(`App received msg of type: ${e.data.type}`);
 
 	if (msgHandlers[e.data.type]) {
 		msgHandlers[e.data.type](e.data.data);
 	}
-
-	// if (evt.data.key === "color" && evt.data.newValue) {
-	//   let color = JSON.parse(evt.data.newValue);
-	//   console.log(`Setting background color: ${color}`);
-	//   background.style.fill = color;
-	// }
 };
 
 messaging.peerSocket.onopen = () => {
 	console.log("App Socket Open");
 };
 
-
 messaging.peerSocket.onclose = () => {
 	console.log("App Socket Closed");
 };
 
-ui.spinner.enable();
+const updateImagesStatus = (newStatus) => {
+	if (!gotTagImages && newStatus){
+		ui.imagesStatus.showSuccess();
+		gotTagImages = true;
+	}
+};
 
-// if monthly_price == 0
-// 	return 'strategic' if !trial? && !free?
-// 	'free'
-// 	elsif monthly_price < 249
-// 'ots_basic'
-// elsif monthly_price < 800
-// 'ots_advanced'
-// elsif monthly_price < 1800
-// 'pro'
-// elsif monthly_price < 10_000
-// 'premium'
-// else
-// 'strategic'
+function processAllFiles() {
+	let fileName;
+
+	while (fileName = inbox.nextFile()) {
+		const outFileName = fileName + ".txi";
+		jpeg.decodeSync(fileName, outFileName, {overwrite: true});
+		fs.unlinkSync(fileName);
+
+		updateImagesStatus(true);
+
+		ui.images.showImage(`/private/data/${outFileName}`);
+	}
+}
+
+inbox.addEventListener("newfile", processAllFiles);
+
+processAllFiles();
+
+initialize();

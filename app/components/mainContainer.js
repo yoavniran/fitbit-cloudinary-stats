@@ -1,4 +1,3 @@
-import document from "document";
 import initComponent from "./base";
 
 let container = null,
@@ -6,7 +5,11 @@ let container = null,
 
 export default () => {
 	if (!container) {
-		api = initComponent("main-container");
+		api = initComponent("main-container", {
+			scrollToTop: () => {
+				container.value = 0;
+			}
+		});
 		container = api._elm;
 	}
 
