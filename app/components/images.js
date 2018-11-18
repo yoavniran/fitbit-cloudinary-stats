@@ -16,6 +16,13 @@ export default () => {
 					elms[index].image = path;
 					elms[index].parent.display = "inline";
 				}
+			},
+
+			clear: () => {
+				for (let i = 0; i < elms.length; i++) {
+					elms[i].image = "";
+					elms[i].parent.display = "none";
+				}
 			}
 		});
 

@@ -10,12 +10,59 @@ let gotTagImages = false;
 
 const ui = getUi();
 
+const cleanFiles = () => {
+	const listDir = fs.listDirSync("private/data");
+
+	if (!listDir.done) {
+		let iter = listDir.next();
+
+		while (iter && !iter.done) {
+			console.log("found dir item = " + iter.value);
+			iter = listDir.next();
+		}
+	}
+};
+
 const initialize = () => {
+
+	cleanFiles();
+
 	gotTagImages = false;
 	ui.spinner.enable();
 	ui.imagesStatus.showError();
 	ui.mainContainer.hide();
+	ui.images.clear();
 };
+
+const updateImagesStatus = (newStatus) => {
+	if (!gotTagImages && newStatus) {
+		ui.imagesStatus.showSuccess();
+		gotTagImages = true;
+	}
+};
+
+function processAllFiles() {
+	let fileName;
+
+	console.log("About to process files from inbox");
+
+	while (fileName = inbox.nextFile()) {
+		try {
+			const outFileName = fileName + ".txi";
+			jpeg.decodeSync(fileName, outFileName, {overwrite: true});
+			fs.unlinkSync(fileName);
+
+			updateImagesStatus(true);
+
+			console.log(`showing image from /private/data/${outFileName}`);
+
+			ui.images.showImage(`/private/data/${outFileName}`);
+		}
+		catch (ex) {
+			console.log("!!!!!!!!!!!!!! ERROR READING FILE FROM INBOX = " + ex);
+		}
+	}
+}
 
 const msgHandlers = {
 	[MSG_TYPES.REPORT]: (data) => {
@@ -42,7 +89,11 @@ const msgHandlers = {
 
 	[MSG_TYPES.INITIALIZE]: () => {
 		initialize();
-	}
+	},
+
+	[MSG_TYPES.FILES_SENT]: () => {
+		processAllFiles(); //make sure we dont have anything left in the inbox
+	},
 };
 
 messaging.peerSocket.onmessage = (e) => {
@@ -60,30 +111,5 @@ messaging.peerSocket.onopen = () => {
 messaging.peerSocket.onclose = () => {
 	console.log("App Socket Closed");
 };
-
-const updateImagesStatus = (newStatus) => {
-	if (!gotTagImages && newStatus){
-		ui.imagesStatus.showSuccess();
-		gotTagImages = true;
-	}
-};
-
-function processAllFiles() {
-	let fileName;
-
-	while (fileName = inbox.nextFile()) {
-		const outFileName = fileName + ".txi";
-		jpeg.decodeSync(fileName, outFileName, {overwrite: true});
-		fs.unlinkSync(fileName);
-
-		updateImagesStatus(true);
-
-		ui.images.showImage(`/private/data/${outFileName}`);
-	}
-}
-
-inbox.addEventListener("newfile", processAllFiles);
-
-processAllFiles();
 
 initialize();

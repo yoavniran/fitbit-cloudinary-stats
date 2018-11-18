@@ -1,6 +1,6 @@
 import * as messaging from "messaging";
 import {settingsStorage} from "settings";
-import {CLD_SETTINGS, MSG_TYPES, TAG_FILE_PREFIX} from "../common/consts";
+import {MSG_TYPES, TAG_FILE_PREFIX} from "../common/consts";
 import {fetchReport, fetchLatestForTag} from "./cloudinary";
 import sendFile from "./fileSender";
 
@@ -8,9 +8,14 @@ const DEFAULTS = {
 	toggleTag: false,
 };
 
+const CLD_SETTINGS = [
+	"cloud",
+	"apikey",
+	"secret"];
+
 const DEVICE_SETTINGS = [];
 
-const cldSettings = {
+const loadedSettings = {
 	cloud: null,
 	apikey: null,
 	secret: null,
@@ -19,6 +24,7 @@ const cldSettings = {
 const ALL_SETTINGS = CLD_SETTINGS.concat(DEVICE_SETTINGS);
 
 let hasAllCldSettings = false;
+let taggedPhotosRequested = false;
 
 const sendToDevice = (type, data = {}) => {
 	if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -26,8 +32,6 @@ const sendToDevice = (type, data = {}) => {
 			type,
 			data,
 		});
-
-		console.log("!!!!!!!!! sent message of type = ", type);
 	}
 	else {
 		console.log("!!!!!!!!!! cant send, socket is closed !!!!");
@@ -54,13 +58,13 @@ const getSettingValue = (value) => {
 
 const retrieveCloudinaryData = (initializing) => {
 
-	if (cldSettings.cloud &&
-		cldSettings.apikey &&
-		cldSettings.secret) {
+	if (loadedSettings.cloud &&
+		loadedSettings.apikey &&
+		loadedSettings.secret) {
 
 		hasAllCldSettings = true;
 
-		fetchReport(cldSettings)
+		fetchReport(loadedSettings)
 			.then((result) => {
 
 				if (result.error) {
@@ -82,11 +86,45 @@ const retrieveCloudinaryData = (initializing) => {
 	}
 };
 
+const retrieveCloudinaryTagPhotos = () => {
+
+	if (hasAllCldSettings) {
+		const toggle = getSettingValue(settingsStorage.getItem("toggleTag")),
+			tag = getSettingValue(settingsStorage.getItem("tag"));
+
+		if (toggle && tag && !taggedPhotosRequested) {
+			taggedPhotosRequested = true;
+
+			fetchLatestForTag(tag, loadedSettings)
+				.then((result) => {
+
+					Promise.all(result.map((f, i) => {
+						console.log(`sending tagged photo - (${i}) - ${f.url} `);
+
+						return sendFile({
+							url: f.url,
+							id: `cld${i}`,
+						}, TAG_FILE_PREFIX);
+					}))
+						.then(()=>{
+							console.log("!!!!!!!!!!! FINISHED SENDING TAGGED PHOTOS");
+							setTimeout(()=>{
+								sendToDevice(MSG_TYPES.FILES_SENT);
+							}, 100);
+
+						});
+				})
+				.catch((err) => {
+					console.log("something bad happened !!!", err);
+				});
+		}
+	}
+};
+
 const updateCldSetting = (key, val, initializing = false) => {
 	const isCld = isCldAccountSetting(key);
 
 	if (isCld) {
-		cldSettings[key] = val;
 		retrieveCloudinaryData(initializing); //update data from Cloudinary
 	}
 
@@ -94,8 +132,10 @@ const updateCldSetting = (key, val, initializing = false) => {
 };
 
 const handleSetting = (key, val, initializing = false) => {
+
+	loadedSettings[key] = val;
+
 	updateCldSetting(key, val, initializing);
-	retrieveCloudinaryTagPhotos();
 
 	if (isDeviceSetting(key)) {
 		//todo: send app setting to device
@@ -103,10 +143,16 @@ const handleSetting = (key, val, initializing = false) => {
 };
 
 const initialize = () => {
+
+	taggedPhotosRequested = false;
+	hasAllCldSettings = false;
+
 	ALL_SETTINGS.forEach((key)=>{
-		const val = getSettingValue(settingsStorage.getItem(key));
-		handleSetting(key, val, true);
+		loadedSettings[key] = getSettingValue(settingsStorage.getItem(key));
 	});
+
+	retrieveCloudinaryData();
+	retrieveCloudinaryTagPhotos();
 };
 
 messaging.peerSocket.onmessage = function (evt) {
@@ -138,30 +184,6 @@ settingsStorage.onchange = (e) => {
 	handleSetting(e.key, val);
 };
 
-const retrieveCloudinaryTagPhotos = () => {
-
-	if (hasAllCldSettings) {
-		const toggle = getSettingValue(settingsStorage.getItem("toggleTag")),
-			tag = getSettingValue(settingsStorage.getItem("tag"));
-
-		if (toggle && tag) {
-			fetchLatestForTag(tag, cldSettings)
-				.then((result) => {
-					console.log("tagged photos retrieved");
-
-					result.forEach((f, i) => {
-						sendFile({
-							url: f.url,
-							id: `cld${i}`,
-						}, TAG_FILE_PREFIX);
-					});
-				})
-				.catch((err) => {
-					console.log("something bad happened !!!", err);
-				});
-		}
-	}
-};
 
 const setDefault = (name) => {
 	if (settingsStorage.getItem(name) === null) {

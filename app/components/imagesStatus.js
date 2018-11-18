@@ -10,9 +10,6 @@ export default () => {
 	if (!status) {
 		api = initComponent("tag-images-status", {
 			showSuccess: () => {
-
-				console.log("!!!!!!!! SHOWING SUCCESS FOR IMAGES ", scrollText);
-
 				arrow.style.display = "inline";
 				text.text = "Tag Images Ready";
 				text.style.display = "inline";

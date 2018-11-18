@@ -1,7 +1,3 @@
-export const CLD_SETTINGS = [
-	"cloud",
-	"apikey",
-	"secret"];
 
 export const MSG_TYPES = {
 	INITIALIZE: "INITIALIZE",
@@ -10,6 +6,7 @@ export const MSG_TYPES = {
 	NO_CLD_SETTINGS: "NO_CLD_SETTINGS",
 	CONFIG: "CONFIG",
 	UPDATE: "UPDATE",
+	FILES_SENT: "FILES_SENT",
 };
 
 export const FILE_SIZES = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
